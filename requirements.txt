@@ -1,0 +1,18 @@
+# SPT Cash Flow Tool - Dependencias
+# Versión: 4.1
+# Python: 3.8+
+
+# Streamlit y componentes
+streamlit>=1.28.0
+streamlit-option-menu>=0.3.6
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0
+
+# Visualizaciones
+plotly>=5.17.0
+
+# Utilidades
+python-dateutil>=2.8.0
