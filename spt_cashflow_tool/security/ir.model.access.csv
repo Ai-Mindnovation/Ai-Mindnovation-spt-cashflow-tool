@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_financial_kpi_user,Financial KPI - User,model_financial_kpi,base.group_user,1,0,0,0
+access_financial_kpi_manager,Financial KPI - Manager,model_financial_kpi,account.group_account_manager,1,1,1,0
+access_financial_kpi_admin,Financial KPI - Admin,model_financial_kpi,base.group_system,1,1,1,1
+access_cashflow_analysis_user,Cashflow Analysis - User,model_cashflow_analysis,base.group_user,1,0,0,0
+access_cashflow_analysis_manager,Cashflow Analysis - Manager,model_cashflow_analysis,account.group_account_manager,1,1,1,0
+access_cashflow_analysis_admin,Cashflow Analysis - Admin,model_cashflow_analysis,base.group_system,1,1,1,1
+access_revenue_projection_user,Revenue Projection - User,model_revenue_projection,base.group_user,1,0,0,0
+access_revenue_projection_manager,Revenue Projection - Manager,model_revenue_projection,account.group_account_manager,1,1,1,0
+access_revenue_projection_admin,Revenue Projection - Admin,model_revenue_projection,base.group_system,1,1,1,1
+access_revenue_projection_line_user,Revenue Projection Line - User,model_revenue_projection_line,base.group_user,1,0,0,0
+access_revenue_projection_line_manager,Revenue Projection Line - Manager,model_revenue_projection_line,account.group_account_manager,1,1,1,0
+access_revenue_projection_line_admin,Revenue Projection Line - Admin,model_revenue_projection_line,base.group_system,1,1,1,1
