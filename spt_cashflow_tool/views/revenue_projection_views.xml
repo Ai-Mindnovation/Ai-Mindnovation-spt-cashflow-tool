@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Tree View - Listado de Proyecciones -->
+        <record id="view_revenue_projection_tree" model="ir.ui.view">
+            <field name="name">revenue.projection.tree</field>
+            <field name="model">revenue.projection</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="projection_date"/>
+                    <field name="months_to_project"/>
+                    <field name="base_revenue" sum="Total"/>
+                    <field name="base_expenses" sum="Total"/>
+                    <field name="growth_rate"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View - Crear/Editar Proyección -->
+        <record id="view_revenue_projection_form" model="ir.ui.view">
+            <field name="name">revenue.projection.form</field>
+            <field name="model">revenue.projection</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_generate_projections" string="🔄 Generar Proyección" 
+                            type="object" class="oe_highlight"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Nombre de Proyección"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group string="Configuración Base">
+                                <field name="projection_date"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+
+                            <group string="Parámetros de Proyección">
+                                <field name="months_to_project" help="De 1 a 12 meses"/>
+                                <field name="base_revenue" help="Revenue mensual base"/>
+                                <field name="base_expenses" help="Gastos fijos mensuales"/>
+                                <field name="growth_rate" help="Crecimiento mensual en %"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <!-- Líneas de Proyección -->
+                            <page string="Proyecciones Mensuales">
+                                <field name="projection_line_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="month_number"/>
+                                        <field name="month_name"/>
+                                        <field name="projected_revenue" sum="Total"/>
+                                        <field name="projected_expenses" sum="Total"/>
+                                        <field name="net_flow" sum="Total"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <!-- Notas -->
+                            <page string="Notas">
+                                <field name="notes" nolabel="1" placeholder="Escriba aquí observaciones..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_revenue_projection_search" model="ir.ui.view">
+            <field name="name">revenue.projection.search</field>
+            <field name="model">revenue.projection</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="projection_date"/>
+                    <separator/>
+                    <filter name="recent" string="Recientes" 
+                        domain="[('projection_date', '&gt;=', context_today().replace(month=context_today().month-1) if context_today().month &gt; 1 else context_today().replace(year=context_today().year-1, month=12))]"/>
+                    <group expand="0" string="Agrupar por">
+                        <filter name="group_by_date" string="Fecha" context="{'group_by': 'projection_date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Graph View - Proyección (Barras Agrupadas) -->
+        <record id="view_revenue_projection_graph" model="ir.ui.view">
+            <field name="name">revenue.projection.line.graph</field>
+            <field name="model">revenue.projection.line</field>
+            <field name="arch" type="xml">
+                <graph string="Proyección de Flujo de Efectivo" type="bar" stacked="False" sample="1">
+                    <field name="month_name" type="row"/>
+                    <field name="projected_revenue" type="measure"/>
+                    <field name="projected_expenses" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Tree View - Líneas de Proyección (Vista independiente) -->
+        <record id="view_revenue_projection_line_tree" model="ir.ui.view">
+            <field name="name">revenue.projection.line.tree</field>
+            <field name="model">revenue.projection.line</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="projection_id"/>
+                    <field name="month_number"/>
+                    <field name="month_name"/>
+                    <field name="projected_revenue" sum="Total"/>
+                    <field name="projected_expenses" sum="Total"/>
+                    <field name="net_flow" sum="Total"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action - Proyecciones General -->
+        <record id="action_revenue_projection" model="ir.actions.act_window">
+            <field name="name">Proyecciones de Cash Flow</field>
+            <field name="res_model">revenue.projection</field>
+            <field name="view_mode">tree,form,search</field>
+            <field name="context">{}</field>
+            <field name="search_view_id" ref="view_revenue_projection_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea una nueva proyección de flujo de efectivo
+                </p>
+            </field>
+        </record>
+
+        <!-- Action - Vista Gráfica de Proyecciones -->
+        <record id="action_revenue_projection_graph" model="ir.actions.act_window">
+            <field name="name">Gráfico de Proyecciones</field>
+            <field name="res_model">revenue.projection.line</field>
+            <field name="view_mode">graph,tree</field>
+            <field name="context">{'graph_view_ref': 'spt_cashflow_tool.view_revenue_projection_graph'}</field>
+            <field name="target">main</field>
+        </record>
+
+    </data>
+</odoo>

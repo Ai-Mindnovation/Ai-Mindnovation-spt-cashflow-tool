@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View - Wizard para Importar Datos Históricos -->
+        <record id="view_import_historical_data_wizard_form" model="ir.ui.view">
+            <field name="name">import.historical.data.wizard.form</field>
+            <field name="model">import.historical.data.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>📊 Importar Datos Históricos</h1>
+                            <p class="oe_subtitle">Analizar facturas para generar reportes de Cash Flow</p>
+                        </div>
+
+                        <group>
+                            <group string="Rango de Fechas">
+                                <field name="date_from" help="Fecha inicial del período a analizar"/>
+                                <field name="date_to" help="Fecha final del período a analizar"/>
+                            </group>
+
+                            <group string="Configuración">
+                                <field name="period_type" help="Tipo de período para agrupar datos"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+
+                        <footer>
+                            <button name="action_import_historical_data" string="📥 Importar Datos" 
+                                type="object" class="oe_highlight"/>
+                            <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action - Abrir Wizard -->
+        <record id="action_import_historical_data_wizard" model="ir.actions.act_window">
+            <field name="name">Importar Datos Históricos</field>
+            <field name="res_model">import.historical.data.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_import_historical_data_wizard_form"/>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

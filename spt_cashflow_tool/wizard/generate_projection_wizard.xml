@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View - Wizard para Generar Proyección -->
+        <record id="view_generate_projection_wizard_form" model="ir.ui.view">
+            <field name="name">generate.projection.wizard.form</field>
+            <field name="model">generate.projection.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>💵 Generar Proyección de Cash Flow</h1>
+                            <p class="oe_subtitle">Crea una nueva proyección de flujo de efectivo</p>
+                        </div>
+
+                        <group>
+                            <group string="Información Básica">
+                                <field name="name" placeholder="Ej: Proyección Q1 2026"/>
+                                <field name="projection_date"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+
+                            <group string="Configuración">
+                                <field name="months_to_project" help="De 1 a 12 meses"/>
+                                <field name="growth_rate" help="Crecimiento mensual esperado (%)"/>
+                            </group>
+                        </group>
+
+                        <separator string="Parámetros de Proyección"/>
+                        <group>
+                            <group>
+                                <field name="auto_calculate" help="Calcular automáticamente desde datos históricos"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="Base para Proyecciones" attrs="{'invisible': [('auto_calculate', '=', True)]}">
+                                <field name="base_revenue"/>
+                                <field name="base_expenses"/>
+                            </group>
+                            
+                            <group string="Valores Calculados" attrs="{'invisible': [('auto_calculate', '=', False)]}">
+                                <field name="base_revenue" readonly="1"/>
+                                <field name="base_expenses" readonly="1"/>
+                                <p class="oe_note">Valores calculados automáticamente desde los últimos 6 meses de datos históricos</p>
+                            </group>
+                        </group>
+
+                        <footer>
+                            <button name="action_generate_projection" string="✅ Generar Proyección" 
+                                type="object" class="oe_highlight"/>
+                            <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action - Abrir Wizard -->
+        <record id="action_generate_projection_wizard" model="ir.actions.act_window">
+            <field name="name">Nueva Proyección</field>
+            <field name="res_model">generate.projection.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_generate_projection_wizard_form"/>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

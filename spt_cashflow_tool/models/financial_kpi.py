@@ -100,3 +100,109 @@ class FinancialKPI(models.Model):
             'runway_months': round(self.runway_months, 2),
             'date': self.date.strftime('%Y-%m-%d'),
         }
+
+    @api.model
+    def calculate_from_invoices(self):
+        """
+        Calcula los KPIs a partir de las facturas del mes actual
+        - Revenue: suma de facturas validadas del mes
+        - Cash Available: saldo de cuentas de banco
+        - Burn Rate: suma de gastos (facturas de proveedores)
+        Retorna: dict con KPIs calculados
+        """
+        from datetime import datetime
+        from dateutil.relativedelta import relativedelta
+        
+        company = self.env.company
+        today = fields.Date.today()
+        
+        # Período del mes actual
+        first_day = today.replace(day=1)
+        last_day = (first_day + relativedelta(months=1) - relativedelta(days=1)).date()
+        
+        # 1. REVENUE: Facturas de clientes validadas del mes
+        sale_invoices = self.env['account.move'].search([
+            ('company_id', '=', company.id),
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            ('invoice_date', '>=', first_day),
+            ('invoice_date', '<=', last_day),
+        ])
+        monthly_revenue = sum(sale_invoices.mapped('amount_total'))
+        
+        # 2. CASH AVAILABLE: Saldo de cuentas bancarias
+        bank_accounts = self.env['account.account'].search([
+            ('company_id', '=', company.id),
+            ('account_type', '=', 'asset_cash'),
+        ])
+        
+        cash_available = 0
+        for account in bank_accounts:
+            # Obtener saldo actual de la cuenta
+            balance = account.current_balance
+            cash_available += balance
+        
+        # 3. BURN RATE: Gastos mensuales (facturas de proveedores + gastos de empresa)
+        purchase_invoices = self.env['account.move'].search([
+            ('company_id', '=', company.id),
+            ('move_type', '=', 'in_invoice'),
+            ('state', '=', 'posted'),
+            ('invoice_date', '>=', first_day),
+            ('invoice_date', '<=', last_day),
+        ])
+        burn_rate = sum(purchase_invoices.mapped('amount_total'))
+        
+        # Agregar otros gastos operacionales si existen (facturas de gastos)
+        expense_invoices = self.env['account.move'].search([
+            ('company_id', '=', company.id),
+            ('move_type', '=', 'in_expense'),
+            ('state', '=', 'posted'),
+            ('invoice_date', '>=', first_day),
+            ('invoice_date', '<=', last_day),
+        ])
+        burn_rate += sum(expense_invoices.mapped('amount_total'))
+        
+        return {
+            'monthly_revenue': monthly_revenue,
+            'cash_available': cash_available,
+            'burn_rate': burn_rate,
+            'calculation_date': today,
+        }
+
+    @api.model
+    def create_daily_kpi(self):
+        """
+        Cron job: Calcula y crea un registro diario de KPIs
+        Se ejecuta automáticamente cada día vía cron
+        """
+        company = self.env.company
+        today = fields.Date.today()
+        
+        # Verificar si ya existe un KPI para hoy
+        existing_kpi = self.search([
+            ('company_id', '=', company.id),
+            ('date', '=', today),
+        ], limit=1)
+        
+        if existing_kpi:
+            # Actualizar el existente
+            kpi_data = self.calculate_from_invoices()
+            existing_kpi.write({
+                'monthly_revenue': kpi_data['monthly_revenue'],
+                'cash_available': kpi_data['cash_available'],
+                'burn_rate': kpi_data['burn_rate'],
+            })
+            return existing_kpi
+        else:
+            # Crear nuevo
+            kpi_data = self.calculate_from_invoices()
+            
+            kpi = self.create({
+                'name': f"KPI {today.strftime('%d/%m/%Y')}",
+                'date': today,
+                'monthly_revenue': kpi_data['monthly_revenue'],
+                'cash_available': kpi_data['cash_available'],
+                'burn_rate': kpi_data['burn_rate'],
+                'company_id': company.id,
+            })
+            return kpi

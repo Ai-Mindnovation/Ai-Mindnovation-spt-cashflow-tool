@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Menú Principal -->
+        <menuitem id="menu_spt_cashflow_root" name="💰 Cash Flow Tool" 
+            web_icon="spt_cashflow_tool,static/description/icon.png"
+            sequence="50"/>
+
+        <!-- 1. Dashboard - Resumen Ejecutivo -->
+        <menuitem id="menu_financial_kpi_dashboard" name="🏠 Dashboard" 
+            parent="menu_spt_cashflow_root" sequence="10"
+            action="spt_cashflow_tool.action_financial_kpi_dashboard"/>
+
+        <!-- 2. Análisis Histórico -->
+        <menuitem id="menu_cashflow_analysis_root" name="📈 Análisis Histórico" 
+            parent="menu_spt_cashflow_root" sequence="20"/>
+
+        <menuitem id="menu_cashflow_analysis_view" name="Ver Análisis" 
+            parent="menu_cashflow_analysis_root" sequence="21"
+            action="spt_cashflow_tool.action_cashflow_analysis"/>
+
+        <menuitem id="menu_cashflow_top_clients" name="👥 Top Clientes" 
+            parent="menu_cashflow_analysis_root" sequence="22"
+            action="spt_cashflow_tool.action_cashflow_top_clients"/>
+
+        <menuitem id="menu_cashflow_revenue_expenses" name="📊 Revenue vs Gastos" 
+            parent="menu_cashflow_analysis_root" sequence="23"
+            action="spt_cashflow_tool.action_cashflow_revenue_expenses"/>
+
+        <menuitem id="menu_cashflow_analysis_new" name="Nuevo Análisis" 
+            parent="menu_cashflow_analysis_root" sequence="24"
+            action="spt_cashflow_tool.action_cashflow_analysis"/>
+
+        <!-- 3. Proyecciones -->
+        <menuitem id="menu_revenue_projection_root" name="💵 Proyecciones" 
+            parent="menu_spt_cashflow_root" sequence="30"/>
+
+        <menuitem id="menu_revenue_projection_view" name="Ver Proyecciones" 
+            parent="menu_revenue_projection_root" sequence="31"
+            action="spt_cashflow_tool.action_revenue_projection"/>
+
+        <menuitem id="menu_revenue_projection_graph" name="📉 Gráfico de Proyecciones" 
+            parent="menu_revenue_projection_root" sequence="32"
+            action="spt_cashflow_tool.action_revenue_projection_graph"/>
+
+        <menuitem id="menu_revenue_projection_new" name="Nueva Proyección" 
+            parent="menu_revenue_projection_root" sequence="33"
+            action="spt_cashflow_tool.action_revenue_projection"/>
+
+        <!-- 4. Configuración -->
+        <menuitem id="menu_cashflow_config_root" name="⚙️ Configuración" 
+            parent="menu_spt_cashflow_root" sequence="40"
+            groups="base.group_system"/>
+
+        <menuitem id="menu_financial_kpi_config" name="KPIs Financieros" 
+            parent="menu_cashflow_config_root" sequence="41"
+            action="spt_cashflow_tool.action_financial_kpi_dashboard"
+            groups="base.group_system"/>
+
+    </data>
+</odoo>

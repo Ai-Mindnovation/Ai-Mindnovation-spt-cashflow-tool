@@ -110,6 +110,56 @@ class RevenueProjection(models.Model):
             for line in projection.projection_line_ids
         ]
 
+    @api.model
+    def create_projection_from_analysis(self):
+        """
+        Crea una proyección automática basada en el análisis histórico
+        - Usa el revenue promedio de los últimos 6 meses como base
+        - Usa los gastos promedio como base_expenses
+        - Genera 6 meses de proyección
+        """
+        # Obtener análisis históricos de los últimos 6 meses
+        from datetime import datetime
+        from dateutil.relativedelta import relativedelta
+        
+        today = fields.Date.today()
+        six_months_ago = today - relativedelta(months=6)
+        
+        cashflow_analysis = self.env['cashflow.analysis']
+        recent_analyses = cashflow_analysis.search([
+            ('company_id', '=', self.env.company.id),
+            ('date_from', '>=', six_months_ago),
+        ])
+        
+        if not recent_analyses:
+            # Sin datos históricos, usar valores por defecto
+            base_revenue = 100000
+            base_expenses = 50000
+        else:
+            # Calcular promedios
+            total_revenue = sum(recent_analyses.mapped('revenue'))
+            total_expenses = sum(recent_analyses.mapped('expenses'))
+            count = len(recent_analyses)
+            
+            base_revenue = total_revenue / count
+            base_expenses = total_expenses / count
+        
+        # Crear proyección
+        projection = self.create({
+            'name': f"Proyección Auto {today.strftime('%b %Y')}",
+            'projection_date': today,
+            'months_to_project': 6,
+            'base_revenue': base_revenue,
+            'base_expenses': base_expenses,
+            'growth_rate': 0,  # Sin crecimiento inicial
+            'company_id': self.env.company.id,
+        })
+        
+        # Generar líneas automáticamente
+        projection.generate_projections()
+        
+        return projection
+
 
 class RevenueProjectionLine(models.Model):
     _name = 'revenue.projection.line'

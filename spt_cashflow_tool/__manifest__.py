@@ -12,13 +12,26 @@
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/cron.xml',
         'views/menu.xml',
         'views/cashflow_dashboard.xml',
         'views/cashflow_analysis_views.xml',
         'views/revenue_projection_views.xml',
+        'wizard/import_historical_wizard.xml',
+        'wizard/generate_projection_wizard.xml',
         'reports/cashflow_report.xml',
         'data/demo_data.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'spt_cashflow_tool/static/src/css/dashboard.css',
+            'spt_cashflow_tool/static/src/js/dashboard.js',
+        ],
+    },
+    'images': [
+        'static/description/icon.png',
+    ],
+    'web_icon': 'spt_cashflow_tool,static/description/icon.png',
     'installable': True,
     'auto_install': False,
     'application': True,

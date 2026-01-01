@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Tree View - Listado de Análisis -->
+        <record id="view_cashflow_analysis_tree" model="ir.ui.view">
+            <field name="name">cashflow.analysis.tree</field>
+            <field name="model">cashflow.analysis</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="period"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="client_id"/>
+                    <field name="revenue" sum="Total Ingresos"/>
+                    <field name="expenses" sum="Total Gastos"/>
+                    <field name="net_cashflow" sum="Total Flujo Neto"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View - Detalle de Análisis -->
+        <record id="view_cashflow_analysis_form" model="ir.ui.view">
+            <field name="name">cashflow.analysis.form</field>
+            <field name="model">cashflow.analysis</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Periodo"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group string="Período">
+                                <field name="period"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="client_id"/>
+                            </group>
+
+                            <group string="Datos Financieros">
+                                <field name="revenue"/>
+                                <field name="expenses"/>
+                                <field name="net_cashflow"/>
+                            </group>
+
+                            <group string="Otra Información">
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Notas">
+                                <field name="notes" nolabel="1" placeholder="Escriba aquí cualquier observación..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_cashflow_analysis_search" model="ir.ui.view">
+            <field name="name">cashflow.analysis.search</field>
+            <field name="model">cashflow.analysis</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="date_from"/>
+                    <filter name="monthly" string="Mensual" domain="[('period', '=', 'monthly')]"/>
+                    <filter name="quarterly" string="Trimestral" domain="[('period', '=', 'quarterly')]"/>
+                    <filter name="annual" string="Anual" domain="[('period', '=', 'annual')]"/>
+                    <separator/>
+                    <filter name="this_month" string="Este Mes" 
+                        domain="[('date_from', '&gt;=', context_today().replace(day=1))]"/>
+                    <group expand="0" string="Agrupar por">
+                        <filter name="group_by_period" string="Período" context="{'group_by': 'period'}"/>
+                        <filter name="group_by_client" string="Cliente" context="{'group_by': 'client_id'}"/>
+                        <filter name="group_by_date" string="Fecha" context="{'group_by': 'date_from'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Graph View - Top Clientes (Barras Horizontal) -->
+        <record id="view_cashflow_analysis_graph_clients" model="ir.ui.view">
+            <field name="name">cashflow.analysis.graph.clients</field>
+            <field name="model">cashflow.analysis</field>
+            <field name="arch" type="xml">
+                <graph string="Top Clientes por Revenue" type="bar" stacked="False" sample="1">
+                    <field name="client_id" type="row"/>
+                    <field name="revenue" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Graph View - Revenue vs Expenses (Barras) -->
+        <record id="view_cashflow_analysis_graph_revenue_expenses" model="ir.ui.view">
+            <field name="name">cashflow.analysis.graph.revenue.expenses</field>
+            <field name="model">cashflow.analysis</field>
+            <field name="arch" type="xml">
+                <graph string="Revenue vs Gastos por Período" type="bar" stacked="False" sample="1">
+                    <field name="name" type="row"/>
+                    <field name="revenue" type="measure"/>
+                    <field name="expenses" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Pivot View - Análisis Multidimensional -->
+        <record id="view_cashflow_analysis_pivot" model="ir.ui.view">
+            <field name="name">cashflow.analysis.pivot</field>
+            <field name="model">cashflow.analysis</field>
+            <field name="arch" type="xml">
+                <pivot string="Análisis de Cash Flow" sample="1">
+                    <field name="period" type="row"/>
+                    <field name="client_id" type="col"/>
+                    <field name="revenue" type="measure"/>
+                    <field name="expenses" type="measure"/>
+                    <field name="net_cashflow" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- Action - Análisis Histórico General -->
+        <record id="action_cashflow_analysis" model="ir.actions.act_window">
+            <field name="name">Análisis de Cash Flow</field>
+            <field name="res_model">cashflow.analysis</field>
+            <field name="view_mode">tree,graph,pivot,form,search</field>
+            <field name="context">{}</field>
+            <field name="search_view_id" ref="view_cashflow_analysis_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea tu primer análisis de cash flow
+                </p>
+            </field>
+        </record>
+
+        <!-- Action - Top Clientes (Graph View por defecto) -->
+        <record id="action_cashflow_top_clients" model="ir.actions.act_window">
+            <field name="name">Top Clientes</field>
+            <field name="res_model">cashflow.analysis</field>
+            <field name="view_mode">graph,tree,pivot,form</field>
+            <field name="view_id" ref="view_cashflow_analysis_graph_clients"/>
+            <field name="target">main</field>
+        </record>
+
+        <!-- Action - Revenue vs Gastos -->
+        <record id="action_cashflow_revenue_expenses" model="ir.actions.act_window">
+            <field name="name">Revenue vs Gastos</field>
+            <field name="res_model">cashflow.analysis</field>
+            <field name="view_mode">graph,tree,pivot,form</field>
+            <field name="view_id" ref="view_cashflow_analysis_graph_revenue_expenses"/>
+            <field name="target">main</field>
+        </record>
+
+    </data>
+</odoo>

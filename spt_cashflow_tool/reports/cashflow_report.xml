@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Template QWeb para el Reporte PDF -->
+        <template id="cashflow_report_template">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- HEADER -->
+                        <div class="header_section" style="margin-bottom: 30px; border-bottom: 2px solid #2563EB; padding-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h1 style="color: #2563EB; margin: 0; font-size: 32px;">💰 SPT CASH FLOW TOOL</h1>
+                                    <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Reporte de Análisis de Flujo de Efectivo</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <p style="margin: 0; color: #666;"><strong>Empresa:</strong> <span t-esc="doc.company.name or 'N/A'"/></p>
+                                    <p style="margin: 5px 0 0 0; color: #666;"><strong>Fecha:</strong> <span t-esc="doc.report_date"/></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 1: KPIs PRINCIPALES -->
+                        <div class="kpi_section" style="margin-bottom: 30px;">
+                            <h2 style="color: #2563EB; border-bottom: 1px solid #E5E7EB; padding-bottom: 10px; margin-bottom: 15px;">🎯 KPIs Principales</h2>
+                            
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #F3F4F6;">
+                                        <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: left;">Métrica</th>
+                                        <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">Valor</th>
+                                        <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">Variación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px;">💰 Efectivo Disponible</td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                            <t t-if="doc.kpi">$<span t-esc="'{:,.2f}'.format(doc.kpi.get('cash_available', 0))"/></t>
+                                            <t t-else="">N/A</t>
+                                        </td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                            <t t-if="doc.kpi">
+                                                <span t-attf-style="color: {{ 'green' if doc.kpi.get('cash_variation', 0) >= 0 else 'red' }};">
+                                                    <t t-esc="doc.kpi.get('cash_variation', 0)"/>%
+                                                </span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr style="background-color: #F9FAFB;">
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px;">📊 Revenue Mensual</td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                            <t t-if="doc.kpi">$<span t-esc="'{:,.2f}'.format(doc.kpi.get('monthly_revenue', 0))"/></t>
+                                            <t t-else="">N/A</t>
+                                        </td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                            <t t-if="doc.kpi">
+                                                <span t-attf-style="color: {{ 'green' if doc.kpi.get('revenue_variation', 0) >= 0 else 'red' }};">
+                                                    <t t-esc="doc.kpi.get('revenue_variation', 0)"/>%
+                                                </span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px;">🔥 Burn Rate</td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                            <t t-if="doc.kpi">$<span t-esc="'{:,.2f}'.format(doc.kpi.get('burn_rate', 0))"/></t>
+                                            <t t-else="">N/A</t>
+                                        </td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                            <t t-if="doc.kpi">
+                                                <span t-attf-style="color: {{ 'green' if doc.kpi.get('burn_rate_variation', 0) &lt;= 0 else 'red' }};">
+                                                    <t t-esc="doc.kpi.get('burn_rate_variation', 0)"/>%
+                                                </span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr style="background-color: #F9FAFB;">
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px;"><strong>⏱️ Runway</strong></td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                            <t t-if="doc.kpi"><strong><span t-esc="doc.kpi.get('runway_months', 0)"/> meses</strong></t>
+                                            <t t-else="">N/A</t>
+                                        </td>
+                                        <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- SECCIÓN 2: ESTADÍSTICAS HISTÓRICAS -->
+                        <div class="analysis_section" style="margin-bottom: 30px;">
+                            <h2 style="color: #2563EB; border-bottom: 1px solid #E5E7EB; padding-bottom: 10px; margin-bottom: 15px;">📈 Análisis Histórico</h2>
+                            
+                            <t t-if="doc.analysis.get('statistics')">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #F3F4F6;">
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: left;">Métrica</th>
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="border: 1px solid #E5E7EB; padding: 10px;">Revenue Promedio</td>
+                                            <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                                $<span t-esc="'{:,.2f}'.format(doc.analysis['statistics'].get('average_revenue', 0))"/>
+                                            </td>
+                                        </tr>
+                                        <tr style="background-color: #F9FAFB;">
+                                            <td style="border: 1px solid #E5E7EB; padding: 10px;">Revenue Mínimo</td>
+                                            <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                                $<span t-esc="'{:,.2f}'.format(doc.analysis['statistics'].get('min_revenue', 0))"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid #E5E7EB; padding: 10px;">Revenue Máximo</td>
+                                            <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                                $<span t-esc="'{:,.2f}'.format(doc.analysis['statistics'].get('max_revenue', 0))"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </div>
+
+                        <!-- SECCIÓN 3: TOP CLIENTES -->
+                        <div class="top_clients_section" style="margin-bottom: 30px;">
+                            <h2 style="color: #2563EB; border-bottom: 1px solid #E5E7EB; padding-bottom: 10px; margin-bottom: 15px;">👥 Top Clientes</h2>
+                            
+                            <t t-if="doc.analysis.get('top_clients')">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #F3F4F6;">
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: left;">Cliente</th>
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">Revenue Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="doc.analysis['top_clients']" t-as="client">
+                                            <tr t-attf-style="background-color: {{ '#F9FAFB' if client_index % 2 == 0 else 'white' }};">
+                                                <td style="border: 1px solid #E5E7EB; padding: 10px;">
+                                                    <t t-esc="client['client']"/>
+                                                </td>
+                                                <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                                    $<span t-esc="'{:,.2f}'.format(client['revenue'])"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </div>
+
+                        <!-- SECCIÓN 4: PROYECCIONES -->
+                        <div class="projection_section" style="margin-bottom: 30px;">
+                            <h2 style="color: #2563EB; border-bottom: 1px solid #E5E7EB; padding-bottom: 10px; margin-bottom: 15px;">💵 Proyecciones de Cash Flow</h2>
+                            
+                            <t t-if="doc.projection.get('lines')">
+                                <p style="margin-bottom: 15px; color: #666;">
+                                    <strong>Proyección:</strong> <span t-esc="doc.projection.get('name')"/> | 
+                                    <strong>Meses:</strong> <span t-esc="doc.projection.get('months')"/> | 
+                                    <strong>Crecimiento:</strong> <span t-esc="doc.projection.get('growth_rate')"/>%
+                                </p>
+
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #F3F4F6;">
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: left;">Mes</th>
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">Ingresos</th>
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">Gastos</th>
+                                            <th style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">Flujo Neto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="doc.projection['lines']" t-as="line">
+                                            <tr t-attf-style="background-color: {{ '#F9FAFB' if line_index % 2 == 0 else 'white' }};">
+                                                <td style="border: 1px solid #E5E7EB; padding: 10px;">
+                                                    <t t-esc="line['month']"/>
+                                                </td>
+                                                <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                                    $<span t-esc="'{:,.2f}'.format(line['revenue'])"/>
+                                                </td>
+                                                <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;">
+                                                    $<span t-esc="'{:,.2f}'.format(line['expenses'])"/>
+                                                </td>
+                                                <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: right;" t-attf-style="background-color: {{ '#DCFCE7' if line['net_flow'] >= 0 else '#FEE2E2' }}; color: {{ '#15803D' if line['net_flow'] >= 0 else '#991B1B' }};">
+                                                    <strong>$<span t-esc="'{:,.2f}'.format(line['net_flow'])"/></strong>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <t t-else="">
+                                <p style="color: #999; text-align: center;">No hay proyecciones disponibles</p>
+                            </t>
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div class="footer_section" style="margin-top: 50px; border-top: 1px solid #E5E7EB; padding-top: 15px; text-align: center; color: #999; font-size: 12px;">
+                            <p style="margin: 0;">
+                                <strong>SPT Cash Flow Tool v1.0</strong> | Desarrollado por <strong>AI-MindNovation</strong>
+                            </p>
+                            <p style="margin: 5px 0 0 0;">
+                                Este reporte ha sido generado automáticamente. Los datos se basan en los registros de facturas e información financiera cargada en el sistema.
+                            </p>
+                        </div>
+                    </div>
+                </t t-call>
+            </t t-call>
+        </template>
+
+        <!-- Acción de Reporte -->
+        <record id="action_report_cashflow" model="ir.actions.report">
+            <field name="name">Reporte Cash Flow</field>
+            <field name="model">financial.kpi</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">spt_cashflow_tool.cashflow_report_template</field>
+            <field name="print_report_name">'Reporte Cash Flow - %s' % object.date</field>
+            <field name="binding_model_id" ref="model_financial_kpi"/>
+        </record>
+
+    </data>
+</odoo>

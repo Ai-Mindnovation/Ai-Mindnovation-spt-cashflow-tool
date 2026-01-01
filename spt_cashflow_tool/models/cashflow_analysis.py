@@ -123,3 +123,135 @@ class CashflowAnalysis(models.Model):
             'max_revenue': max(revenues) if revenues else 0,
             'total_periods': len(revenues),
         }
+
+    @api.model
+    def import_historical_data(self, date_from, date_to, period_type='monthly', company_id=None):
+        """
+        Importa datos históricos de análisis basados en facturas
+        
+        Args:
+            date_from: Fecha inicio
+            date_to: Fecha fin
+            period_type: 'monthly' o 'quarterly'
+            company_id: Empresa (usa self.env.company si no se especifica)
+        """
+        from dateutil.relativedelta import relativedelta
+        
+        if not company_id:
+            company_id = self.env.company
+        
+        # Limpiar análisis existentes en el rango
+        existing = self.search([
+            ('company_id', '=', company_id.id),
+            ('date_from', '>=', date_from),
+            ('date_to', '<=', date_to),
+        ])
+        existing.unlink()
+        
+        # Generar períodos según tipo
+        if period_type == 'monthly':
+            periods = self._generate_monthly_periods(date_from, date_to)
+        else:  # quarterly
+            periods = self._generate_quarterly_periods(date_from, date_to)
+        
+        # Para cada período, calcular revenue y gastos
+        for period in periods:
+            period_date_from = period['date_from']
+            period_date_to = period['date_to']
+            period_name = period['name']
+            
+            # REVENUE: Facturas de clientes
+            sale_invoices = self.env['account.move'].search([
+                ('company_id', '=', company_id.id),
+                ('move_type', '=', 'out_invoice'),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', period_date_from),
+                ('invoice_date', '<=', period_date_to),
+            ])
+            revenue = sum(sale_invoices.mapped('amount_total'))
+            
+            # EXPENSES: Facturas de proveedores + gastos
+            purchase_invoices = self.env['account.move'].search([
+                ('company_id', '=', company_id.id),
+                ('move_type', '=', 'in_invoice'),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', period_date_from),
+                ('invoice_date', '<=', period_date_to),
+            ])
+            expenses = sum(purchase_invoices.mapped('amount_total'))
+            
+            expense_invoices = self.env['account.move'].search([
+                ('company_id', '=', company_id.id),
+                ('move_type', '=', 'in_expense'),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', period_date_from),
+                ('invoice_date', '<=', period_date_to),
+            ])
+            expenses += sum(expense_invoices.mapped('amount_total'))
+            
+            # Crear registro de análisis
+            self.create({
+                'name': period_name,
+                'period': period_type,
+                'date_from': period_date_from,
+                'date_to': period_date_to,
+                'revenue': revenue,
+                'expenses': expenses,
+                'company_id': company_id.id,
+            })
+
+    @staticmethod
+    def _generate_monthly_periods(date_from, date_to):
+        """Genera lista de períodos mensuales"""
+        from dateutil.relativedelta import relativedelta
+        
+        periods = []
+        current_date = date_from
+        
+        while current_date <= date_to:
+            # Último día del mes
+            next_month = current_date + relativedelta(months=1)
+            last_day_of_month = next_month - relativedelta(days=1)
+            
+            # No exceder date_to
+            end_date = min(last_day_of_month, date_to)
+            
+            periods.append({
+                'date_from': current_date,
+                'date_to': end_date,
+                'name': current_date.strftime('%B %Y'),  # Ej: "January 2025"
+            })
+            
+            current_date = end_date + relativedelta(days=1)
+        
+        return periods
+
+    @staticmethod
+    def _generate_quarterly_periods(date_from, date_to):
+        """Genera lista de períodos trimestrales"""
+        from dateutil.relativedelta import relativedelta
+        
+        periods = []
+        current_date = date_from
+        
+        while current_date <= date_to:
+            quarter = (current_date.month - 1) // 3 + 1
+            year = current_date.year
+            
+            # Última fecha del trimestre
+            if quarter == 4:
+                next_quarter_start = current_date.replace(year=year + 1, month=1, day=1)
+            else:
+                next_quarter_start = current_date.replace(month=(quarter * 3) + 1, day=1)
+            
+            end_date = min(next_quarter_start - relativedelta(days=1), date_to)
+            
+            periods.append({
+                'date_from': current_date,
+                'date_to': end_date,
+                'name': f'Q{quarter} {year}',
+            })
+            
+            current_date = end_date + relativedelta(days=1)
+        
+        return periods
