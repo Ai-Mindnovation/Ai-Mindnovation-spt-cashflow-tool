@@ -206,8 +206,8 @@
                             </p>
                         </div>
                     </div>
-                </t t-call>
-            </t t-call>
+                </t>
+            </t>
         </template>
 
         <!-- Acción de Reporte -->

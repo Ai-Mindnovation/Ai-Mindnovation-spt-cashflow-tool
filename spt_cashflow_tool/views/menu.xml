@@ -49,13 +49,11 @@
 
         <!-- 4. Configuración -->
         <menuitem id="menu_cashflow_config_root" name="⚙️ Configuración" 
-            parent="menu_spt_cashflow_root" sequence="40"
-            groups="base.group_system"/>
+            parent="menu_spt_cashflow_root" sequence="40"/>
 
         <menuitem id="menu_financial_kpi_config" name="KPIs Financieros" 
             parent="menu_cashflow_config_root" sequence="41"
-            action="spt_cashflow_tool.action_financial_kpi_dashboard"
-            groups="base.group_system"/>
+            action="spt_cashflow_tool.action_financial_kpi_config"/>
 
     </data>
 </odoo>

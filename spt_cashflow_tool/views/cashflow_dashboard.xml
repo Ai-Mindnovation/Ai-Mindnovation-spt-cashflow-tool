@@ -1,107 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Dashboard View para Financial KPI -->
-        <record id="view_financial_kpi_dashboard" model="ir.ui.view">
-            <field name="name">financial.kpi.dashboard</field>
-            <field name="model">financial.kpi</field>
-            <field name="arch" type="xml">
-                <dashboard>
-                    <div class="o_cashflow_dashboard">
-                        <!-- Header -->
-                        <div class="o_dashboard_header">
-                            <h1 class="o_dashboard_title">💰 SPT CASH FLOW TOOL</h1>
-                            <p class="o_dashboard_subtitle">Resumen Ejecutivo del Flujo de Efectivo</p>
-                        </div>
-
-                        <!-- KPI Cards -->
-                        <div class="o_kpi_container">
-                            <!-- KPI 1: Efectivo Disponible -->
-                            <div class="o_kpi_card o_kpi_card_cash">
-                                <div class="o_kpi_icon">💰</div>
-                                <div class="o_kpi_content">
-                                    <div class="o_kpi_label">Efectivo Disponible</div>
-                                    <div class="o_kpi_value">
-                                        <field name="cash_available" widget="monetary"/>
-                                    </div>
-                                    <div class="o_kpi_variation" t-attf-class="o_variation_{{ 'positive' if cash_variation >= 0 else 'negative' }}">
-                                        <field name="cash_variation" widget="percentage"/>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- KPI 2: Revenue Mensual -->
-                            <div class="o_kpi_card o_kpi_card_revenue">
-                                <div class="o_kpi_icon">📊</div>
-                                <div class="o_kpi_content">
-                                    <div class="o_kpi_label">Revenue Mensual</div>
-                                    <div class="o_kpi_value">
-                                        <field name="monthly_revenue" widget="monetary"/>
-                                    </div>
-                                    <div class="o_kpi_variation" t-attf-class="o_variation_{{ 'positive' if revenue_variation >= 0 else 'negative' }}">
-                                        <field name="revenue_variation" widget="percentage"/>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- KPI 3: Burn Rate -->
-                            <div class="o_kpi_card o_kpi_card_burnrate">
-                                <div class="o_kpi_icon">🔥</div>
-                                <div class="o_kpi_content">
-                                    <div class="o_kpi_label">Burn Rate</div>
-                                    <div class="o_kpi_value">
-                                        <field name="burn_rate" widget="monetary"/>
-                                    </div>
-                                    <div class="o_kpi_variation" t-attf-class="o_variation_{{ 'positive' if burn_rate_variation &lt;= 0 else 'negative' }}">
-                                        <field name="burn_rate_variation" widget="percentage"/>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- KPI 4: Runway -->
-                            <div class="o_kpi_card o_kpi_card_runway">
-                                <div class="o_kpi_icon">⏱️</div>
-                                <div class="o_kpi_content">
-                                    <div class="o_kpi_label">Runway</div>
-                                    <div class="o_kpi_value">
-                                        <field name="runway_months" widget="float" digits="[5,1]"/> meses
-                                    </div>
-                                    <div class="o_kpi_note">Meses de operación restantes</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Recomendaciones -->
-                        <div class="o_recommendations_section">
-                            <h3>📋 Recomendaciones</h3>
-                            <div class="o_recommendation_box" t-attf-class="o_rec_{{ 'success' if cash_available > (burn_rate * 3) else 'warning' }}">
-                                <t t-if="cash_available > (burn_rate * 3)">
-                                    <strong>✅ EXCEDENTE DE EFECTIVO</strong>
-                                    <p>Efectivo disponible: <field name="cash_available" widget="monetary"/></p>
-                                    <p>Necesidades próximos 3 meses: <field name="burn_rate" widget="monetary" class="o_inline"/> × 3</p>
-                                    <p class="o_highlight">
-                                        Excedente para inversión: $<t t-esc="'{:,.2f}'.format(cash_available - (burn_rate * 3))"/>
-                                    </p>
-                                </t>
-                                <t t-else="">
-                                    <strong>⚠️ ATENCIÓN: RECURSO LIMITADO</strong>
-                                    <p>El efectivo disponible cubre menos de 3 meses de operación.</p>
-                                    <p>Se recomienda revisar gastos o aumentar ingresos.</p>
-                                </t>
-                            </div>
-                        </div>
-
-                        <!-- Notas -->
-                        <div class="o_notes_section" t-if="notes">
-                            <h4>📝 Notas</h4>
-                            <p><field name="notes"/></p>
-                        </div>
-                    </div>
-                </dashboard>
-            </field>
-        </record>
-
-        <!-- Form View para Financial KPI (edición) -->
+        <!-- Form View para Financial KPI -->
         <record id="view_financial_kpi_form" model="ir.ui.view">
             <field name="name">financial.kpi.form</field>
             <field name="model">financial.kpi</field>
@@ -117,7 +17,7 @@
                         <group>
                             <group string="Información General">
                                 <field name="date"/>
-                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="company_id"/>
                             </group>
 
                             <group string="KPIs Principales">
@@ -159,16 +59,41 @@
             </field>
         </record>
 
-        <!-- Action para abrir Dashboard -->
+        <!-- Search View -->
+        <record id="view_financial_kpi_search" model="ir.ui.view">
+            <field name="name">financial.kpi.search</field>
+            <field name="model">financial.kpi</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="date"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action para Dashboard - Muestra último KPI -->
         <record id="action_financial_kpi_dashboard" model="ir.actions.act_window">
-            <field name="name">KPI Dashboard</field>
+            <field name="name">Dashboard - KPIs</field>
             <field name="res_model">financial.kpi</field>
-            <field name="view_mode">dashboard,tree,form</field>
-            <field name="view_id" ref="view_financial_kpi_dashboard"/>
-            <field name="target">main</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_latest': 1}</field>
+            <field name="domain">[]</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
-                    Crea tu primer KPI para comenzar
+                    No hay KPIs registrados. Ve a Configuración para crear el primero.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action para Configuración - Lista completa editable -->
+        <record id="action_financial_kpi_config" model="ir.actions.act_window">
+            <field name="name">Gestión de KPIs</field>
+            <field name="res_model">financial.kpi</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'create': True, 'edit': True, 'delete': True}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay KPIs creados. Haz clic en "Crear" para agregar el primero.
                 </p>
             </field>
         </record>
